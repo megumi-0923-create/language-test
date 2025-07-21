@@ -20,7 +20,7 @@ thai_ranges = [
 # char_test="ประเภทริจิดบอดี้ ()"
 # print(contains_lang_chars(thai_ranges, char_test))
 driver = webdriver.Chrome()
-driver.implicitly_wait(10)
+driver.implicitly_wait(2)
 driver.get("https://ffcraftland.garena.com/th/docs/api")
 driver.maximize_window()
 
@@ -215,25 +215,48 @@ class surface_lang_detect(unittest.TestCase):
             result_url = match.group()
             print('result:    ',result_url)
 
+            # WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH,f'//a[@class="transition-colors duration-300 hover:text-primary"][@href="{result_url}"]')))
+            print('<<<<<')
             element_new = driver.find_element(By.XPATH,f'//a[@class="transition-colors duration-300 hover:text-primary"][@href="{result_url}"]')
             element_new.click()
-            time.sleep(0.5)
+            time.sleep(2)
             # 整个中间页面的元素
+            # WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/section')))
+            print('>>>>>>')
             element_root_middle = driver.find_element(By.XPATH, '//section[@class="app-docs-content"]').get_attribute('outerHTML')
             # 标题下方所属二级分类等那一行的元素
-            WebDriverWait(driver,60).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__nuxt"]/section/main/section/div/section/section/section/section[1]/section/div/div')))
+            # WebDriverWait(driver,60).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__nuxt"]/section/main/section/div/section/section/section/section[1]/section/div/div')))
             element_root = driver.find_element(By.XPATH, '//div[@class="inline-flex flex-wrap"]').get_attribute('outerHTML')
             try:
                 # 页面右侧的导航栏，index
                 element_aside_index = driver.find_element(By.XPATH, '//div[@class="app-docs-nav-index"]')
                 # 页面右侧导航栏的元素
-                element_root_aside = driver.find_element(By.XPATH, '//aside[@class="app-docs-nav"]').get_attribute(
-                    'outerHTML')
+                element_root_aside = driver.find_element(By.XPATH, '//aside[@class="app-docs-nav"]').get_attribute('outerHTML')
             except:
                 pass
 
+            #检查api和event下的declaration是否为空
+            if 'api' in result_url or 'event' in result_url:
+                try:
+                    #显示等待 脚本declaration渲染完成
+                    # WebDriverWait(driver,5).until(EC.presence_of_element_located((By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/section/section[3]/article/div[1]/pre/code/span')))
+                    element_declaration=driver.find_element(By.XPATH,'//span[@class="hljs-keyword"]')
+                    #该脚本的h1标题
+                    element_h1_text=driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/section/section[1]/h1').get_attribute('textContent')
+                    #如果有该元素,检查该元素的文本属性是否为空
+                    text_declaration=element_declaration.get_attribute('textContent')
+                    if text_declaration.strip()=='':
+                        result=False
+                        write_result(element_h1_text, '该api/event有脚本元素，但脚本为空', result)
+                except:
+                    # 该脚本的h1标题
+                    element_h1_text = driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/section/section[1]/h1').get_attribute('textContent')
+                    result = False
+                    write_result(element_h1_text, '该api/event没有脚本元素', result)
+
             #检查被点击的左侧的二级分类下的选项
-            elemnet_new_text=element_new.get_attribute('textContent')
+            element_new_new=driver.find_element(By.XPATH,f'//a[@class="transition-colors duration-300 hover:text-primary"][@href="{result_url}"]')
+            elemnet_new_text=element_new_new.get_attribute('textContent')
             result=contains_lang_chars(thai_ranges, elemnet_new_text)
             write_result(elemnet_new_text, element_new.get_attribute('outerHTML'), result)
             #检测导航栏
@@ -264,6 +287,8 @@ class surface_lang_detect(unittest.TestCase):
                     write_result(value, element_list_used_name[i], result)
             except :
                 pass
+
+            
 
             #检查标题底下，所属二级目录/客户端，移动端/支持pc或移动端
             text, element_list = get_th_text(element_root, 'div')
@@ -373,7 +398,7 @@ class surface_lang_detect(unittest.TestCase):
                 result = contains_lang_chars(thai_ranges, value)
                 write_result(value, element_list_p[index], result)
 
-            element_root_aside = driver.find_element(By.XPATH, '//aside[@class="app-docs-nav"]').get_attribute('outerHTML')
+            element_root_aside = driver.find_element(By.XPATH, '//*[@id="__nuxt"]/section/main/section/div/section/section/aside').get_attribute('outerHTML')
             text_div, element_list_div = get_th_text(element_root_aside, 'div')
             for index, value in enumerate(text_div):
                 result = contains_lang_chars(thai_ranges, value)
@@ -382,6 +407,60 @@ class surface_lang_detect(unittest.TestCase):
             for index, value in enumerate(text_aside_a):
                 result = contains_lang_chars(thai_ranges, value)
                 write_result(value, element_list_aside_a[index], result)
+
+    #检测modules分类下，每个种类的中间的内容
+    @test_print_name_th
+    def test_09_modules_middle(self):
+        element_module_tab = driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/aside/div/div[2]/div[1]/span')
+        element_module_tab.click()
+        for i in range(40):
+            element = driver.find_element(By.XPATH,f'//*[@id="__nuxt"]/section/main/section/div/aside/div/div[4]/div/div/ul/li[{i + 1}]/div/div/a')
+            element.click()
+            time.sleep(0.5)
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__nuxt"]/section/main/section/div/section/section/section/section[1]/h1')))
+            module_middle_root = driver.find_element(By.XPATH, '//*[@id="__nuxt"]/section/main/section/div/section/section/section]').get_attribute('outerHTML')
+            module_aside_root = driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/aside/div').get_attribute('outerHTML')
+            print(element.get_attribute('textContent'))
+
+            text_a, element_a = get_th_text(module_middle_root, 'a')
+            for index, value in enumerate(text_a):
+                result = contains_lang_chars(thai_ranges, value)
+                write_result(value, element_a[index], result)
+
+            text_h1, element_h1 = get_th_text(module_middle_root, 'h1')
+            for index, value in enumerate(text_h1):
+                result = contains_lang_chars(thai_ranges, value)
+                write_result(value, element_h1[index], result)
+
+            text_span, element_span = get_th_text(module_middle_root, 'span')
+            for index, value in enumerate(text_span):
+                result = contains_lang_chars(thai_ranges, value)
+                write_result(value, element_span[index], result)
+
+            text_th, element_th = get_th_text(module_middle_root, 'th')
+            for index, value in enumerate(text_th):
+                result = contains_lang_chars(thai_ranges, value)
+                write_result(value, element_th[index], result)
+
+            text_td, element_td = get_th_text(module_middle_root, 'td')
+            for index, value in enumerate(text_td):
+                result = contains_lang_chars(thai_ranges, value)
+                write_result(value, element_td[index], result)
+
+            WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/section/section[1]/section/div/div/div/div/div')))
+            element_required_tips = driver.find_element(By.XPATH,'//div[@class="gfr-tooltip-content max-w-60 text-center"]')
+            result=contains_lang_chars(thai_ranges, element_required_tips.get_attribute('textContent'))
+            write_result(result, element_required_tips.get_attribute('outerHtml'), result)
+
+            text_aside_a, element_aside_a = get_th_text(module_aside_root, 'a')
+            for index, value in enumerate(text_aside_a):
+                result = contains_lang_chars(thai_ranges, value)
+                write_result(value, element_aside_a[index], result)
+
+            element_aside_index = driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/aside/div/div[1]')
+            result=contains_lang_chars(thai_ranges, element_aside_index.get_attribute('textContent'))
+            write_result(result, element_aside_index.get_attribute('outerHtml'), result)
+            print('================')
 
 
 

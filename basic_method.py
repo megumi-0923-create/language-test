@@ -2,6 +2,7 @@ import csv
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 from bs4 import BeautifulSoup
+import pandas as pd
 
 
 #通过Unicode编码判断某个字符是否是某个语言的字符
@@ -37,18 +38,19 @@ def contains_lang_chars(lang_ranges,text,det_null=False):
 
 #将测试结果写入 测试结果.csv文件
 def write_result(element_txt,element,result):
-    file= "测试结果_th.csv"
-    with open(file,"a",newline="",encoding="utf-8") as f:
-        fieldnames = ['element_txt', 'element', 'result']
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        # 写入数据行
-        if result:
-            a="pass"
-        elif result=='':
-            a=''
-        else:
-            a='fail'
-        writer.writerow({'element_txt': element_txt, 'element': element, 'result': a})
+    if not result:
+        file= "测试结果_th.csv"
+        with open(file,"a",newline="",encoding="utf-8") as f:
+            fieldnames = ['element_txt', 'element', 'result']
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            # 写入数据行
+            if result:
+                a="pass"
+            elif result=='':
+                a=''
+            else:
+                a='fail'
+            writer.writerow({'element_txt': element_txt, 'element': element, 'result': a})
 
 #打印方法名
 def test_print_name_th(method):
@@ -81,3 +83,18 @@ def get_th_text(html_element,label):
         list.append(th.get_text())
         list_element.append(th)
     return list, list_element
+
+#csv文件中，根据某个字段的值，查询该行另一个字段的值
+def search_csv_value(search_value,search_column,target_column,file_path='UGCBlockConfig.csv'):
+    df=pd.read_csv(file_path,encoding='utf-8')
+    result = df[df[search_column] == search_value]
+    return result[target_column]
+
+#UGCBlockConfig中，根据id，查询Division字段的值
+def search_csv_column_division(id):
+    search_column='id'
+    target_column='Division'
+    value=search_csv_value(id,search_column,target_column)
+    return value.iloc[0]
+
+
