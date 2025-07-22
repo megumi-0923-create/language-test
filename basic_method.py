@@ -62,13 +62,7 @@ def test_print_name_th(method):
         return method(*args, **kwargs)
     return wrapper
 
-#找到元素后，检测字符
-def det_lang_new(driver,xpath,lang_ranges):
-    element = driver.find_element(By.XPATH,xpath)
-    element_html = element.get_attribute("outerHTML")
-    element_text = element.get_attribute('textContent')
-    result = contains_lang_chars(lang_ranges, element_text)
-    write_result(element_text,element_html,  result)
+
 
 #
 def get_th_text(html_element,label):
@@ -97,4 +91,14 @@ def search_csv_column_division(id):
     value=search_csv_value(id,search_column,target_column)
     return value.iloc[0]
 
-
+#根据所属division，返回应该有的颜色
+def api_color(id):
+    a=search_csv_column_division(id)
+    if 'condition' in a.strip():
+        return '#1a4a3a'
+    elif 'event' in a.strip():
+        return '#7a3a3a'
+    elif 'data' in a.strip():
+        return '#7a3a5f'
+    else:
+        return -1

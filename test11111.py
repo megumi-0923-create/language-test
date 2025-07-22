@@ -39,8 +39,8 @@ import re
 
 
 driver = webdriver.Chrome()
-driver.implicitly_wait(2)
-driver.get("https://ffcraftland.garena.com/en/docs/api-1-24/")
+driver.implicitly_wait(10)
+driver.get("https://ffcraftland.garena.com/en/docs/")
 driver.maximize_window()
 
 
@@ -70,125 +70,31 @@ for i,element in enumerate(elements):
     element_new.click()
     print('======')
 '''
-
-with open('测试结果_th.csv', 'w') as f:
-    pass
-element = driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/aside/div/div[4]/div/div/ul/li[1]/ul/li[1]/ul/li[1]/div/div/a')
-element.click()
 time.sleep(1)
-html_element = driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/section/nav').get_attribute(
-    'outerHTML')
-text, element_list = get_th_text(html_element, 'li')
-for i, value in enumerate(text):
-    if i % 2 == 1:
-        continue
-    result = contains_lang_chars(thai_ranges, value)
-    write_result(value, element_list[i], result)
-write_result('', '', '')
-# 点击左侧列表后，检查
-elements = driver.find_elements(By.XPATH,'//a[@class="transition-colors duration-300 hover:text-primary"][contains(@href, "/en/docs/api-")]')
-print(elements)
-for i, element in enumerate(elements):
+# WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'')))
+element_module_tab=driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/aside/div/div[2]/div[1]/span')
+element_module_tab.click()
+for i in range(40):
+    element = driver.find_element(By.XPATH,f'//*[@id="__nuxt"]/section/main/section/div/aside/div/div[4]/div/div/ul/li[{i + 1}]/div/div/a')
+    element.click()
     time.sleep(0.5)
-    element_root = driver.find_element(By.XPATH, '//div[@class="inline-flex flex-wrap"]').get_attribute('outerHTML')
-    element_root_middle = driver.find_element(By.XPATH, '//section[@class="app-docs-content"]').get_attribute('outerHTML')
-    element_aside_index = driver.find_element(By.XPATH, '//div[@class="app-docs-nav-index"]')
-    element_root_aside = driver.find_element(By.XPATH, '//aside[@class="app-docs-nav"]').get_attribute('outerHTML')
-    print(element.get_attribute('outerHTML'))
-    print(element.get_attribute('textContent'))
-    if 'Obsolete' in element.get_attribute('textContent') or element.get_attribute('textContent') == '':
-        continue
-    url = element.get_attribute('href')
-    pattern = '/en/docs/(.*)'
-    match = re.search(pattern, url)
-    result = match.group()
-    print(result)
-    element_new = driver.find_element(By.XPATH,f'//a[@class="transition-colors duration-300 hover:text-primary"][@href="{result}"]')
-    element_new.click()
-    # 检查被点击的左侧的二级分类下的选项
-    elemnet_new_text = element_new.get_attribute('textContent')
-    result = contains_lang_chars(thai_ranges, elemnet_new_text)
-    write_result(elemnet_new_text, element_new.get_attribute('outerHTML'), result)
-    # 检测导航栏
-    html_element = driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/section/nav').get_attribute(
-        'outerHTML')
-    text, element_list = get_th_text(html_element, 'li')
-    for i, value in enumerate(text):
-        if i % 2 == 1:
-            continue
-        result = contains_lang_chars(thai_ranges, value)
-        write_result(value, element_list[i], result)
-    # 检测h1标题(api标题和declaration)
-    html_element = driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/section').get_attribute(
-        'outerHTML')
-    text, element_list = get_th_text(html_element, 'h1')
-    for i, value in enumerate(text):
-        result = contains_lang_chars(thai_ranges, value)
-        write_result(value, element_list[i], result)
-    # 检测api的曾用名,没有曾用名就跳过
-    try:
-        html_element = driver.find_element(By.XPATH, '//div[@class="gfr-dropdown-wrapper z-20"]').get_attribute(
-            'outerHTML')
-        text, element_list = get_th_text(html_element, 'li')
-        text_used_name, element_list_used_name = get_th_text(html_element, 'span')
-        for i, value in enumerate(text):
-            result = contains_lang_chars(thai_ranges, value)
-            write_result(value, element_list[i], result)
-        for i, value in enumerate(text_used_name):
-            result = contains_lang_chars(thai_ranges, value)
-            write_result(value, element_list_used_name[i], result)
-    except:
-        pass
-
-    # 检查标题底下，所属二级目录/客户端，移动端/支持pc或移动端
-    text, element_list = get_th_text(element_root, 'div')
-    for i, value in enumerate(text):
-        result = contains_lang_chars(thai_ranges, value)
-        write_result(value, element_list[i], result)
-
-    write_result('','','')
-    text, element_list = get_th_text(element_root, 'a')
-    for i, value in enumerate(text):
-        result = contains_lang_chars(thai_ranges, value)
-        write_result(value, element_list[i], result)
-
-    text, element_list = get_th_text(html_element, 'p')
-    write_result('','','')
-    for i, value in enumerate(text):
-        result = contains_lang_chars(thai_ranges, value)
-        write_result(value, element_list[i], result)
-    write_result('','','')
-    try:
-        elements_api=driver.find_elements(By.CLASS_NAME,'blocklyText')
-        for element in elements_api:
-            element_html_api=element.get_attribute('outerHTML')
-            element_text_api=element.get_attribute('textContent')
-            result=contains_lang_chars(thai_ranges,element_text_api)
-            write_result(element_text_api, element_html_api, result)
-            print(element_text_api)
-        text_h2,element_list_h2 = get_th_text(element_root_middle, 'h2')
-        print(text_h2)
-        for index, value in enumerate(text_h2):
-            result = contains_lang_chars(thai_ranges, value)
-            print(value)
-            write_result(value, element_list_h2[index], result)
-        element_root_footer = driver.find_element(By.XPATH,'//footer[@class="flex justify-between h-7 max-lg:h-9"]').get_attribute('outerHTML')
-        a = driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/section/section[3]/footer/a[2]/span[1]')
-        # WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/section/section[3]/footer/a[2]/span[1]')))
-        if not a.is_displayed():
-            print('111111')
-        print('--------')
-        print(a.get_attribute('textContent'))
-        text_h2, element_list_h2 = get_th_text(element_root_footer, 'span')
-        print(text_h2)
-        print('---------')
-        a, b = get_th_text(element_root_aside, 'a')
-        print(a)
-        print('>>>>>>>>>>')
-        print(element_aside_index.get_attribute('textContent'))
-        print('///////////')
-    except:
-        pass
-    write_result('', '', '')
-    print('======')
-
+    WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/section/section[1]/h1')))
+    module_middle_root=driver.find_element(By.XPATH,'//section[@class="app-docs-content"]').get_attribute('outerHTML')
+    module_aside_root=driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/aside/div').get_attribute('outerHTML')
+    text_a,element_a=get_th_text(module_middle_root,'a')
+    print(text_a)
+    text_h1, element_h1 = get_th_text(module_middle_root, 'h1')
+    print(text_h1)
+    text_span, element_span = get_th_text(module_middle_root, 'span')
+    print(text_span)
+    text_th, element_th = get_th_text(module_middle_root, 'th')
+    print(text_th)
+    text_td, element_td = get_th_text(module_middle_root, 'td')
+    print(text_td)
+    element_required_tips=driver.find_element(By.XPATH,'//div[@class="gfr-tooltip-content max-w-60 text-center"]')
+    print(element_required_tips.get_attribute('textContent'))
+    text_aside_a,element_aside_a=get_th_text(module_aside_root,'a')
+    print(text_aside_a)
+    element_aside_index=driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/div/section/section/aside/div/div[1]')
+    print(element_aside_index.get_attribute('textContent'))
+    print('================')
