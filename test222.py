@@ -1,5 +1,6 @@
 import re
 from selenium import webdriver
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 import time
 from basic_method import *
@@ -10,7 +11,7 @@ import pandas as pd
 
 driver = webdriver.Chrome()
 driver.implicitly_wait(2)
-driver.get("https://ffcraftland.garena.com/en/docs/api/")
+driver.get("https://ffcraftland.garena.com/en/docs/event-1-175/")
 driver.maximize_window()
 
 file_path='UGCBlockConfig.csv'
@@ -22,9 +23,12 @@ search_column = 'id'    # 包含目标值的列名
 target_column = 'Division'    # 要获取值的列名
 
 time.sleep(2)
-driver.find_element(By.XPATH,'//*[@id="__nuxt"]/section/main/section/aside/div/div[4]/div/div/ul/li[4]/div/div/a').click()
-result_url = '/en/docs/api-1-25/'
-
-element_new = driver.find_element(By.XPATH,f'//a[@href="{result_url}"]')
-element_new.click()
-time.sleep(10)
+element_root_owner = driver.find_element(By.XPATH,'//div[@class="flex w-full justify-start py-2"]').get_attribute('outerHTML')
+text_owner,element_list_owner = get_th_text(element_root_owner, 'a')
+for index, value in enumerate(text_owner):
+    print(value)
+print('------')
+text_owner, element_list_owner = get_th_text(element_root_owner, 'span')
+for index, value in enumerate(text_owner):
+    print(value)
+time.sleep(1000)

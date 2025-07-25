@@ -37,11 +37,11 @@ def contains_lang_chars(lang_ranges,text,det_null=False):
     return True
 
 #将测试结果写入 测试结果.csv文件
-def write_result(element_txt,element,result):
+def write_result(element_txt,element,result,tips=None):
     if not result:
         file= "测试结果_th.csv"
         with open(file,"a",newline="",encoding="utf-8") as f:
-            fieldnames = ['element_txt', 'element', 'result']
+            fieldnames = ['element_txt', 'element', 'result', 'tips']
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             # 写入数据行
             if result:
@@ -50,7 +50,10 @@ def write_result(element_txt,element,result):
                 a=''
             else:
                 a='fail'
-            writer.writerow({'element_txt': element_txt, 'element': element, 'result': a})
+            if tips==None:
+                writer.writerow({'element_txt': element_txt, 'element': element, 'result': a})
+            else:
+                writer.writerow({'element_txt': element_txt, 'element': element, 'result': a,'tips':tips})
 
 #打印方法名
 def test_print_name_th(method):
@@ -85,14 +88,14 @@ def search_csv_value(search_value,search_column,target_column,file_path='UGCBloc
     return result[target_column]
 
 #UGCBlockConfig中，根据id，查询Division字段的值
-def search_csv_column_division(id):
+def search_csv_column_division(id:str):
     search_column='id'
     target_column='Division'
     value=search_csv_value(id,search_column,target_column)
     return value.iloc[0]
 
 #根据所属division，返回应该有的颜色
-def api_color(id):
+def api_color(id:str):
     a=search_csv_column_division(id)
     if 'condition' in a.strip():
         return '#1a4a3a'
@@ -100,5 +103,9 @@ def api_color(id):
         return '#7a3a3a'
     elif 'data' in a.strip():
         return '#7a3a5f'
+    elif 'action' in a.strip():
+        return '#61662f'
+    elif 'module' in a.strip():
+        return '#28536a'
     else:
         return -1
